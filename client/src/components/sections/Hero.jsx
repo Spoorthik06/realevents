@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronDown, Sparkles } from 'lucide-react';
-import { Button } from '../ui/Button';
+import { UIButton } from '../ui/UIButton';
 import { FadeIn } from '../animations/FadeIn';
 
 export const Hero = () => {
@@ -39,12 +39,12 @@ export const Hero = () => {
           </FadeIn>
           
           <FadeIn delay={0.4} className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-            <Button onClick={scrollToForm} className="text-lg px-10 py-4 shadow-brand-orange/30">
+            <UIButton onClick={scrollToForm} className="text-lg px-10 py-4 shadow-brand-orange/30">
               Claim Your Offer
-            </Button>
-            <Button variant="outline" className="text-lg px-10 py-4">
+            </UIButton>
+            <UIButton variant="outline" className="text-lg px-10 py-4">
               Learn More
-            </Button>
+            </UIButton>
           </FadeIn>
           
           <FadeIn delay={0.5}>
@@ -66,7 +66,7 @@ export const Hero = () => {
               {/* Abstract App Representation */}
               <div className="absolute inset-0 bg-gradient-to-br from-brand-orange to-brand-darkOrange rounded-3xl shadow-2xl transform rotate-3 flex items-center justify-center p-8">
                  <div className="w-full h-full bg-white rounded-2xl shadow-inner flex flex-col items-center justify-center overflow-hidden relative">
-                    <img src="https://picsum.photos/600/600?random=10" alt="App Preview" className="absolute inset-0 w-full h-full object-cover opacity-90" />
+                    <img src="./assets/Hero_Image.jpg" alt="App Preview" className="absolute inset-0 w-full h-full object-cover opacity-90" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-8">
                       <div className="bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-lg transform translate-y-2">
                         <div className="flex items-center gap-3">

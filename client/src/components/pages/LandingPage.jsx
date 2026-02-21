@@ -4,7 +4,7 @@ import { HowItWorks } from '../sections/HowItWorks';
 import { Benefits } from '../sections/Benefits';
 import { RegistrationForm } from '../sections/RegistrationForm';
 import { Footer } from '../sections/Footer';
-import { Button } from '../ui/Button';
+import { UIButton } from '../ui/UIButton';
 import { motion, useScroll, useSpring } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
@@ -36,6 +36,8 @@ export const LandingPage = () => {
     const element = document.getElementById('registration-form');
     element?.scrollIntoView({ behavior: 'smooth' });
   };
+  
+  const token = localStorage.getItem('token');
 
   return (
     <div className="font-sans text-brand-black bg-brand-cream/20 min-h-screen selection:bg-brand-orange selection:text-white">
@@ -50,17 +52,17 @@ export const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <div className="text-2xl font-heading font-bold text-brand-orange cursor-pointer" onClick={() => window.scrollTo(0,0)}>RealEventz</div>
           <div className="flex items-center gap-4">
-             {!showStickyNav && (
-                <button 
+             {!showStickyNav && !token && (
+                <UIButton 
                   onClick={() => navigate('/login')}
-                  className="hidden md:block text-brand-black font-medium hover:text-brand-orange transition-colors"
+                  className="hidden md:block text-brand-black font-medium hover:text-brand-orange transition-colors !rounded-md !px-4 !py-2"
                 >
                   Log In
-                </button>
+                </UIButton>
              )}
             {(showStickyNav || window.innerWidth < 768) && (
               <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-                <Button onClick={scrollToForm} className="text-sm px-6 py-2">Get Early Access</Button>
+                <UIButton onClick={scrollToForm} className="text-sm px-6 py-2">Get Early Access</UIButton>
               </motion.div>
             )}
           </div>

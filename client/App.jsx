@@ -1,8 +1,8 @@
 import React from 'react';
 import { HashRouter, Routes, Route } from 'react-router-dom';
-import { LandingPage } from './components/pages/LandingPage';
-import { LoginPage } from './components/pages/LoginPage';
-import { SignupPage } from './components/pages/SignupPage';
+import { LandingPage } from './src/components/pages/LandingPage';
+import { LoginPage } from './src/components/pages/LoginPage';
+import { SignupPage } from './src/components/pages/SignupPage';
 
 const App = () => {
   return (

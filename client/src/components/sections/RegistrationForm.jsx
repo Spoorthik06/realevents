@@ -4,8 +4,10 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import confetti from 'canvas-confetti';
 import { Loader2, CheckCircle2 } from 'lucide-react';
-import { Button } from '../ui/Button';
+import { UIButton } from '../ui/UIButton';
 import { FadeIn } from '../animations/FadeIn';
+import { submitRequest } from '../../api/requestsApi';
+import { useNavigate } from 'react-router-dom';
 
 // Validation Schema
 const schema = z.object({
@@ -17,9 +19,21 @@ const schema = z.object({
   interests: z.array(z.string()).optional(),
 });
 
+const OFFER_END_DATE = new Date('2026-02-25T00:00:00');
+
 export const RegistrationForm = () => {
+  const calculateTimeLeft = () => {
+    const difference = +OFFER_END_DATE - +new Date();
+    return Math.max(0, Math.floor(difference / 1000));
+  };
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
+
+
+  const user = localStorage.getItem('user');
+  const navigate = useNavigate();
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     resolver: zodResolver(schema),
@@ -27,11 +41,16 @@ export const RegistrationForm = () => {
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log("Form Submitted:", data);
-    setIsSubmitting(false);
-    setIsSuccess(true);
+    try {
+      await submitRequest(data);
+      console.log("Form Submitted Successfully");
+      setIsSuccess(true);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert(error.message || "Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleReset = () => {
@@ -69,6 +88,32 @@ export const RegistrationForm = () => {
     }
   }, [isSuccess]);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTime = (totalSeconds) => {
+    const d = Math.floor(totalSeconds / (3600 * 24));
+    const h = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+
+    const parts = [];
+    if (d > 0) parts.push(`${d}Days`);
+    parts.push(h.toString().padStart(2, '0'));
+    parts.push(m.toString().padStart(2, '0'));
+    parts.push(s.toString().padStart(2, '0'));
+
+    if (d > 0) {
+      return `${parts[0]} ${parts[1]}:${parts[2]}:${parts[3]}`;
+    }
+    return `${parts[0]}:${parts[1]}:${parts[2]}`;
+  };
+
+
   if (isSuccess) {
     return (
       <section id="registration-form" className="py-24 bg-brand-cream relative overflow-hidden min-h-[600px] flex items-center justify-center">
@@ -80,9 +125,9 @@ export const RegistrationForm = () => {
           <p className="text-gray-600 text-lg mb-8">
             Thank you for registering. Check your inbox for your confirmation and early access details.
           </p>
-          <Button onClick={handleReset} variant="outline">
+          <UIButton onClick={handleReset} variant="outline">
             Register Another Person
-          </Button>
+          </UIButton>
         </FadeIn>
       </section>
     );
@@ -91,7 +136,23 @@ export const RegistrationForm = () => {
   return (
     <section id="registration-form" className="py-24 bg-brand-cream relative">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <FadeIn className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+        {/* Countdown Header */}
+        <FadeIn className="mb-8">
+          <div className="bg-brand-orange text-white rounded-2xl p-6 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 border-b-4 border-brand-orange/20">
+            <div className="text-center md:text-left">
+              <h3 className="text-lg font-bold uppercase tracking-tighter opacity-90">Flash Offer Ending Soon!</h3>
+              <p className="text-brand-cream/80 text-sm">Register now to lock in exclusive perks and pricing.</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md px-8 py-4 rounded-xl border border-white/20 min-w-[240px] text-center shadow-inner">
+              <span className="text-xs uppercase tracking-widest text-brand-cream/60 block mb-1">Offer Expires In</span>
+              <span className="text-4xl md:text-5xl font-bold font-mono tabular-nums leading-none">
+                {formatTime(timeLeft)}
+              </span>
+            </div>
+          </div>
+        </FadeIn>
+
+        <FadeIn className="bg-white rounded-3xl shadow-2xl overflow-hidden" delay={0.2}>
           <div className="grid grid-cols-1 md:grid-cols-5 h-full">
             {/* Form Side */}
             <div className="md:col-span-3 p-8 md:p-12">
@@ -157,7 +218,12 @@ export const RegistrationForm = () => {
                 </div>
 
                 <div className="pt-2">
-                  <Button type="submit" fullWidth disabled={isSubmitting}>
+                  <UIButton 
+                    type={user ? "submit" : "button"} 
+                    fullWidth 
+                    disabled={isSubmitting}
+                    onClick={() => !user && navigate('/login')}
+                  >
                     {isSubmitting ? (
                       <span className="flex items-center gap-2">
                         <Loader2 className="animate-spin" size={18} /> Processing...
@@ -165,7 +231,7 @@ export const RegistrationForm = () => {
                     ) : (
                       "Claim My Offer"
                     )}
-                  </Button>
+                  </UIButton>
                 </div>
               </form>
             </div>
@@ -173,31 +239,25 @@ export const RegistrationForm = () => {
             {/* Visual Side */}
             <div className="md:col-span-2 bg-brand-orange p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden">
                <div className="absolute inset-0 bg-black/10 z-0" />
-               <div className="relative z-10">
-                 <h3 className="text-2xl font-heading font-bold mb-4">What's included?</h3>
-                 <ul className="space-y-4">
-                   <li className="flex items-start gap-3">
-                     <div className="w-1.5 h-1.5 rounded-full bg-brand-cream mt-2.5" />
-                     <p className="text-brand-cream/90 text-sm">Early access to RealEventz beta platform.</p>
-                   </li>
-                   <li className="flex items-start gap-3">
-                     <div className="w-1.5 h-1.5 rounded-full bg-brand-cream mt-2.5" />
-                     <p className="text-brand-cream/90 text-sm">Exclusive Launch Discount Code.</p>
-                   </li>
-                   <li className="flex items-start gap-3">
-                     <div className="w-1.5 h-1.5 rounded-full bg-brand-cream mt-2.5" />
-                     <p className="text-brand-cream/90 text-sm">Direct line to our planning experts.</p>
-                   </li>
-                 </ul>
-               </div>
-               
-               <div className="relative z-10 mt-8">
-                 <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
-                   <p className="text-xs text-brand-cream/80 uppercase tracking-widest mb-1">Time Remaining</p>
-                   <p className="text-2xl font-bold font-mono">23:59:01</p>
-                   <p className="text-xs mt-1">Before offer expires</p>
-                 </div>
-               </div>
+                <div className="relative z-10">
+                  <h3 className="text-2xl font-heading font-bold mb-4">What's included?</h3>
+                  <ul className="space-y-4">
+                    {[
+                      "Free basic balloon decoration",
+                      "Basic backdrop",
+                      "Name customization",
+                      "Limited area coverage",
+                      "Selected cities only",
+                      "Terms & Conditions",
+                      "Upsell opportunity (add-ons)"
+                    ].map((item, idx) => (
+                      <li key={idx} className="flex items-start gap-3">
+                        <div className="w-1.5 h-1.5 rounded-full bg-brand-cream mt-2.5 shrink-0" />
+                        <p className="text-brand-cream/90 text-sm leading-tight">{item}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
             </div>
           </div>
         </FadeIn>

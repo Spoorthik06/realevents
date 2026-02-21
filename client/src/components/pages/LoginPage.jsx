@@ -3,17 +3,18 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, ArrowLeft, Check } from 'lucide-react';
-import { Button } from '../ui/Button';
+import { Loader2, ArrowLeft } from 'lucide-react';
+import { UIButton } from '../ui/UIButton';
 import { FadeIn } from '../animations/FadeIn';
+import { login } from '../../api/authApi';
 
 const schema = z.object({
-  fullName: z.string().min(2, "Full Name is required"),
   email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string().min(1, "Password is required"),
 });
 
-export const SignupPage = () => {
+
+export const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const navigate = useNavigate();
@@ -24,11 +25,19 @@ export const SignupPage = () => {
 
   const onSubmit = async (data) => {
     setIsLoading(true);
-    // Simulate API
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    console.log("Signup Data:", data);
-    setIsLoading(false);
-    navigate('/');
+    try {
+      const result = await login(data);
+      
+      localStorage.setItem('token', result.token);
+      localStorage.setItem('user', JSON.stringify(result.user));
+      
+      navigate('/');
+    } catch (error) {
+      console.error("Login Error:", error);
+      alert(error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGoogleSignIn = async () => {
@@ -42,43 +51,32 @@ export const SignupPage = () => {
   return (
     <div className="min-h-screen flex bg-brand-cream">
       {/* Left Panel - Visual */}
-      <div className="hidden lg:flex w-1/2 bg-brand-orange text-white p-12 flex-col justify-between relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-full h-full bg-black/10 pointer-events-none" />
+      <div className="hidden lg:flex w-1/2 bg-brand-black text-white p-12 flex-col justify-between relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-brand-orange/20 to-transparent pointer-events-none" />
         <div className="relative z-10">
           <Link to="/" className="text-2xl font-heading font-bold text-white mb-12 block">RealEventz</Link>
           <div className="max-w-md">
-            <h1 className="text-5xl font-heading font-bold mb-6">Join the revolution.</h1>
-            <p className="text-xl text-white/90 mb-8">Create an account to start planning your events instantly. Experience the future of event management.</p>
-            
-            <ul className="space-y-4">
-               {['Free account for life', 'Access to top-rated vendors', 'Instant booking confirmation', '24/7 Concierge Support'].map((item, i) => (
-                 <li key={i} className="flex items-center gap-3">
-                   <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
-                     <Check size={14} />
-                   </div>
-                   <span className="font-medium">{item}</span>
-                 </li>
-               ))}
-            </ul>
+            <h1 className="text-5xl font-heading font-bold mb-6">Welcome back.</h1>
+            <p className="text-xl text-gray-400">Log in to manage your events, check your wishlist, and access exclusive early-bird offers.</p>
           </div>
         </div>
         <div className="relative z-10">
-           <p className="text-sm text-white/70">© 2024 RealEventz Inc.</p>
+           <p className="text-sm text-gray-500">© 2024 RealEventz Inc.</p>
         </div>
         
         {/* Abstract shapes */}
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-white rounded-full blur-[120px] opacity-10" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-brand-orange rounded-full blur-[100px] opacity-20" />
       </div>
 
       {/* Right Panel - Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12">
-        <FadeIn className="w-full max-w-md bg-transparent p-8 md:p-10">
+        <FadeIn className="w-full max-w-md bg-transparent md:p-10 ">
            <Link to="/" className="inline-flex items-center text-sm text-gray-500 hover:text-brand-orange mb-8 transition-colors">
              <ArrowLeft size={16} className="mr-1" /> Back to Home
            </Link>
            
-           <h2 className="text-3xl font-heading font-bold text-brand-black mb-2">Create Account</h2>
-           <p className="text-gray-500 mb-8">Get started with your free account today.</p>
+           <h2 className="text-3xl font-heading font-bold text-brand-black mb-2">Sign In</h2>
+           <p className="text-gray-500 mb-8">Enter your details to access your account.</p>
 
            <div className="space-y-4">
              <button 
@@ -96,7 +94,7 @@ export const SignupPage = () => {
                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                    </svg>
-                   <span>Sign up with Google</span>
+                   <span>Sign in with Google</span>
                  </>
                )}
              </button>
@@ -109,16 +107,6 @@ export const SignupPage = () => {
 
              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                 <input
-                   {...register('fullName')}
-                   className={`w-full px-4 py-3 rounded-xl border ${errors.fullName ? 'border-red-500 bg-red-50' : 'border-gray-200 focus:border-brand-orange'} focus:ring-2 focus:ring-brand-orange/20 outline-none transition-all`}
-                   placeholder="John Doe"
-                 />
-                 {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName.message}</p>}
-               </div>
-
-               <div>
                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                  <input
                    {...register('email')}
@@ -130,25 +118,28 @@ export const SignupPage = () => {
                </div>
                
                <div>
-                 <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                 <div className="flex justify-between mb-1">
+                    <label className="block text-sm font-medium text-gray-700">Password</label>
+                    <a href="#" className="text-sm text-brand-orange font-medium hover:underline">Forgot?</a>
+                 </div>
                  <input
                    {...register('password')}
                    type="password"
                    className={`w-full px-4 py-3 rounded-xl border ${errors.password ? 'border-red-500 bg-red-50' : 'border-gray-200 focus:border-brand-orange'} focus:ring-2 focus:ring-brand-orange/20 outline-none transition-all`}
-                   placeholder="Create a password"
+                   placeholder="••••••••"
                  />
                  {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
                </div>
 
-               <Button type="submit" fullWidth disabled={isLoading || isGoogleLoading}>
-                  {isLoading ? <Loader2 className="animate-spin" /> : "Create Account"}
-               </Button>
+               <UIButton type="submit" fullWidth disabled={isLoading || isGoogleLoading}>
+                  {isLoading ? <Loader2 className="animate-spin" /> : "Sign In"}
+               </UIButton>
              </form>
 
              <p className="text-center text-sm text-gray-600 mt-6">
-                Already have an account?{' '}
-                <Link to="/login" className="font-semibold text-brand-orange hover:text-brand-darkOrange transition-colors">
-                  Log in
+                Don't have an account?{' '}
+                <Link to="/signup" className="font-semibold text-brand-orange hover:text-brand-darkOrange transition-colors">
+                  Sign up for free
                 </Link>
              </p>
            </div>

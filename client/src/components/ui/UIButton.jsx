@@ -1,7 +1,6 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 
-export const Button = ({ 
+export const UIButton = ({ 
   variant = 'primary', 
   fullWidth = false, 
   children, 
