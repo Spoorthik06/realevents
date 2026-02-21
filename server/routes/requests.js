@@ -12,6 +12,15 @@ const requestSchema = z.object({
     timeSlot: z.string()
 });
 
+router.get('/', async (req, res) => {
+    try {
+        const requests = await Request.find();
+        res.status(200).json(requests);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 router.post('/', async (req, res) => {
     try {
         const data = requestSchema.parse(req.body);
