@@ -1,7 +1,7 @@
-import React from 'react';
 import { ChevronDown, Sparkles } from 'lucide-react';
 import { UIButton } from '../ui/UIButton';
 import { FadeIn } from '../animations/FadeIn';
+import HeroImage from '../../../assets/Hero_Image.jpg';
 
 export const Hero = () => {
   const scrollToForm = () => {
@@ -66,7 +66,7 @@ export const Hero = () => {
               {/* Abstract App Representation */}
               <div className="absolute inset-0 bg-gradient-to-br from-brand-orange to-brand-darkOrange rounded-3xl shadow-2xl transform rotate-3 flex items-center justify-center p-8">
                  <div className="w-full h-full bg-white rounded-2xl shadow-inner flex flex-col items-center justify-center overflow-hidden relative">
-                    <img src="./assets/Hero_Image.jpg" alt="App Preview" className="absolute inset-0 w-full h-full object-cover opacity-90" />
+                    <img src={HeroImage} alt="App Preview" className="absolute inset-0 w-full h-full object-cover opacity-90" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-8">
                       <div className="bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-lg transform translate-y-2">
                         <div className="flex items-center gap-3">
