@@ -6,20 +6,20 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 if (!admin.apps.length) {
-    if (process.env.NODE_ENV === 'production') {
-        admin.initializeApp({
-            credential: admin.credential.cert({
-                projectId: process.env.FIREBASE_PROJECT_ID,
-                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-            }),
-        });
-    } else {
-        // Local development using your JSON file
-        admin.initializeApp({
-            credential: admin.credential.cert('./realevents-ae063-firebase-adminsdk-fbsvc-9f3d9a994c.json')
-        });
-    }
+    const isProd = process.env.NODE_ENV === 'production';
+
+    const serviceAccount = isProd 
+    ? {
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        // The replace() is critical to fix newline characters in the private key
+        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      }
+    : './realevents-ae063-firebase-adminsdk-fbsvc-9f3d9a994c.json';
+
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount) //
+    });
 }
 
 export const db = getFirestore();
